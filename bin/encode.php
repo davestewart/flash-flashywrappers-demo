@@ -7,6 +7,7 @@
 
 	// write data
 	file_put_contents($path, $data);
+	//file_put_contents("media/$name.txt", utf8_decode($data));
 
 	// result
 	echo json_encode(array(
