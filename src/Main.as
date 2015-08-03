@@ -1,6 +1,8 @@
 package
 {
+	import app.display.video.FLVByteArrayPlayer;
 	import app.display.video.VideoControls;
+	import app.display.video.VideoPlayer;
 	import app.display.video.VideoRecorder;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -28,6 +30,7 @@ package
 		// variables
 		
 			// video
+			protected var player		:FLVByteArrayPlayer;
 			protected var recorder		:VideoRecorder;
 			protected var encoder		:VideoEncoder;
 			
@@ -53,15 +56,20 @@ package
 				// video recorder
 				recorder			= new VideoRecorder(this, 400, 400);
 				
+				// video player
+				player				= new FLVByteArrayPlayer(this, 400, 400);
+				player.x			= 400;
+				
 				// controls
 				controls			= new VideoControls(this, recorder);
 				controls.btnRecord.addEventListener(MouseEvent.CLICK, onRecordClick);
 				controls.btnPlay.addEventListener(MouseEvent.CLICK, onPlayClick);
 				controls.btnSave.addEventListener(MouseEvent.CLICK, onSaveClick);
 				controls.btnUpload.addEventListener(MouseEvent.CLICK, onUploadClick);
+				controls.btnLoad.addEventListener(MouseEvent.CLICK, onLoadClick);
 				
 				// encoder
-				encoder				= new VideoEncoder(recorder, 5 * 25, 12.5);
+				encoder				= new VideoEncoder(recorder, 5 * 25, 12.5, 'mp4');
 				encoder.addEventListener(VideoEncoderEvent.LOADING, onEncoderEvent);
 				encoder.addEventListener(VideoEncoderEvent.LOADED, onEncoderEvent);
 				encoder.addEventListener(VideoEncoderEvent.INITIALIZING, onEncoderEvent);
@@ -84,32 +92,24 @@ package
 		
 			protected function start():void 
 			{
-				encoder.load('lib/FW_SWFBridge_ffmpeg.swf');
+				encoder.load(); // 'lib/FW_SWFBridge_ffmpeg.swf'
 			}
 			
 			protected function preview():void 
 			{
-				// connection
-				var connection	:NetConnection	= new NetConnection();
-				connection.connect(null);
+				player.loadBytes(encoder.getVideo());
 				
-				// stream + bytes
-				var stream		:NetStream		= new NetStream(connection);
-				var bytes		:ByteArray		= encoder.getVideo();
-				
-				// set up netstream
-				stream.play(null);
-				stream.appendBytesAction(NetStreamAppendBytesAction.RESET_BEGIN); 
-				stream.appendBytes(bytes);
-				
-				// attach to video
-				recorder.video.attachNetStream(stream);
-				stream.seek(1);
 			}
 			
 			protected function upload():void
 			{
 				uploader.upload(encoder.getVideo());
+			}
+			
+			protected function setStatus(message:String):void 
+			{
+				controls.setStatus(message);
+				trace(message);
 			}
 			
  			
@@ -130,6 +130,7 @@ package
 			{
 				if (encoder.phase == VideoEncoder.PHASE_FINISHED)
 				{
+					setStatus('Playing bytearray...');
 					preview();
 				}
 			}
@@ -138,6 +139,7 @@ package
 			{
 				if (encoder.phase == VideoEncoder.PHASE_FINISHED)
 				{
+					setStatus('Saving flv...');
 					fileref.save(encoder.getVideo());
 				}
 			}
@@ -150,6 +152,15 @@ package
 				}
 			}
 			
+			protected function onLoadClick(event:MouseEvent):void 
+			{
+				if (encoder.phase == VideoEncoder.PHASE_FINISHED)
+				{
+					setStatus('Playing mp4 stream...');
+					player.loadUrl(uploader.response.url);
+				}
+			}
+			
 			// Encoder
 			
 			private function onEncoderEvent(event:VideoEncoderEvent):void 
@@ -158,13 +169,15 @@ package
 				trace('event:', event.type);
 				
 				// update controls
-				controls.setStatus(encoder.phase);
+				setStatus('Encoder: ' + encoder.phase);
 				
 				// special cases
 				switch (event.type) 
 				{
 					case VideoEncoderEvent.READY:
 						trace('Video encoder is ready!');
+						recorder.initCamera();
+						controls.btnRecord.enabled = true;
 						break;
 						
 					case VideoEncoderEvent.ENCODING:
@@ -176,7 +189,10 @@ package
 						break;
 						
 					case VideoEncoderEvent.FINISHED:
-						trace('Video encoded in % seconds'.replace('%', encoder.duration.toFixed(2)));
+						setStatus('Video encoded in % seconds'.replace('%', encoder.duration.toFixed(2)));
+						controls.btnPlay.enabled = true;
+						controls.btnSave.enabled = true;
+						controls.btnUpload.enabled = true;
 						preview();
 						break;
 						
@@ -190,6 +206,8 @@ package
 			protected function onUploadComplete(event:Event):void 
 			{
 				navigateToURL(new URLRequest(uploader.response.url), 'video');
+				setStatus('Video uploaded to: ' + uploader.response.url);
+				controls.btnLoad.enabled = true;
 			}
 			
 		
