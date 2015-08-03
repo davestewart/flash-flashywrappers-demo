@@ -5,6 +5,7 @@ package core.media.encoder
 	import com.rainbowcreatures.swf.*;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.events.StatusEvent;
 	import flash.utils.ByteArray;
 	import flash.utils.getTimer;
@@ -14,7 +15,7 @@ package core.media.encoder
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class VideoEncoder extends Sprite 
+	public class VideoEncoder extends EventDispatcher 
 	{
 
 		// --------------------------------------------------------------------------------------------------------
