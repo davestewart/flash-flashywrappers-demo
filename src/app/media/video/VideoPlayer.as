@@ -1,4 +1,4 @@
-package app.display.video 
+package app.media.video 
 {
 	import app.display.Element;
 	import fl.controls.Button;
@@ -77,12 +77,6 @@ package app.display.video
 				stream.client = { };	
 				video.attachNetStream(stream);
 				stream.play(url);
-			}
-			
-			public function play(stream:NetStream):void
-			{
-				video.attachNetStream(stream);
-				stream.play(0);
 			}
 			
 			

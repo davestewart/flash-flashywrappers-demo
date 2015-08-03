@@ -1,4 +1,4 @@
-package app.display.video 
+package app.media.video 
 {
 	import app.display.Element;
 	import fl.controls.Button;

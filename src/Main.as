@@ -1,9 +1,9 @@
 package
 {
-	import app.display.video.FLVByteArrayPlayer;
-	import app.display.video.VideoControls;
-	import app.display.video.VideoPlayer;
-	import app.display.video.VideoRecorder;
+	import app.media.video.FLVByteArrayPlayer;
+	import app.display.VideoControls;
+	import app.media.video.VideoPlayer;
+	import app.media.video.VideoRecorder;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;

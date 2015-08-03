@@ -1,4 +1,4 @@
-package app.display.video 
+package app.media.video 
 {
 	import cc.minos.codec.ICodec;
 	import flash.display.DisplayObjectContainer;
