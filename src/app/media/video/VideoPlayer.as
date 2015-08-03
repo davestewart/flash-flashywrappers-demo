@@ -1,6 +1,6 @@
 package app.media.video 
 {
-	import app.display.Element;
+	import core.display.Element;
 	import fl.controls.Button;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Shape;

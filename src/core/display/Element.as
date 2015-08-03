@@ -1,4 +1,4 @@
-package app.display 
+package core.display 
 {
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Sprite;

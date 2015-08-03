@@ -1,12 +1,13 @@
 package app.display 
 {
-	import app.display.Element;
+	import core.display.Element;
 	import app.media.video.VideoRecorder;
 	import fl.controls.Button;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Shape;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
+	import flash.text.TextFormat;
 
 	/**
 	 * ...
@@ -56,6 +57,8 @@ package app.display
 				// status
 				status					= new TextField();
 				status.autoSize			= TextFieldAutoSize.LEFT;
+				status.defaultTextFormat	= new TextFormat('_sans', 12);
+				status.x				= 5;
 				status.y				= 30;
 				addChild(status);
 				
