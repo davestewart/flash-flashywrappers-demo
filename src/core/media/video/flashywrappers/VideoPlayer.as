@@ -60,6 +60,12 @@ package core.media.video.flashywrappers
 			
 			override public function play():void 
 			{
+				// error if not bytes have been loaded
+				if (bytes == null)
+				{
+					throw new Error('Cannot create / play stream as no bytes have been loaded');
+				}
+				
 				// set up the stream
 				stream			= new NetStream(connection);
 				stream.client	= {};
