@@ -4,6 +4,7 @@ package
 	import app.display.VideoControls;
 	import core.media.video.flashywrappers.VideoPlayer;
 	import core.media.video.VideoRecorder;
+	import core.utils.Timer;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
@@ -29,17 +30,19 @@ package
 		// --------------------------------------------------------------------------------------------------------
 		// variables
 		
-			// video
-			protected var player		:VideoPlayer;
-			protected var recorder		:VideoRecorder;
-			protected var encoder		:VideoEncoder;
+			// elements
+			public var player			:VideoPlayer;
+			public var recorder			:VideoRecorder;
+			public var controls			:VideoControls;
 			
 			// objects
+			protected var encoder		:VideoEncoder;
 			protected var uploader		:Uploader;
 			protected var fileref		:FileRef;
 			
-			// elements
-			public var controls			:VideoControls;
+			// variables
+			protected var totalFrames	:int;
+			protected var timer			:Timer;
 			
 			
 		// --------------------------------------------------------------------------------------------------------
@@ -47,8 +50,15 @@ package
 		
 			public function Main() 
 			{
+				initialize();
 				build();
-				start();
+			}
+			
+			protected function initialize():void 
+			{
+				totalFrames = 25 * 5;
+				timer		= new Timer(true);
+				VideoEncoder.load(this, start);
 			}
 			
 			protected function build():void 
@@ -68,16 +78,6 @@ package
 				controls.btnUpload.addEventListener(MouseEvent.CLICK, onUploadClick);
 				controls.btnLoad.addEventListener(MouseEvent.CLICK, onLoadClick);
 				
-				// encoder
-				encoder				= new VideoEncoder(recorder, 5 * 25, 12.5, 'mp4');
-				encoder.addEventListener(VideoEncoderEvent.LOADING, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.LOADED, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.INITIALIZING, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.READY, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.CAPTURED, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.ENCODING, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.FINISHED, onEncoderEvent);
-				
 				// uploader
 				uploader			= new Uploader();
 				uploader.addEventListener(Event.COMPLETE, onUploadComplete);
@@ -92,12 +92,35 @@ package
 		
 			protected function start():void 
 			{
-				encoder.load(); // 'lib/FW_SWFBridge_ffmpeg.swf'
+				// trace load time
+				controls.log('Encoder loaded in ' + timer.stop().time)
+				
+				// encoder
+				encoder			= VideoEncoder.instance;
+				encoder.fps		= 12;
+				encoder.addEventListener(VideoEncoderEvent.READY, onEncoderEvent);
+				encoder.addEventListener(VideoEncoderEvent.CAPTURED, onEncoderEvent);
+				encoder.addEventListener(VideoEncoderEvent.ENCODING, onEncoderEvent);
+				encoder.addEventListener(VideoEncoderEvent.FINISHED, onEncoderEvent);
+				
+				// controls
+				controls.btnRecord.enabled = true;
+				recorder.initCamera();
+				
+				// initialize
+				initializeEncoder();
+			}
+			
+			protected function initializeEncoder():void 
+			{
+				timer.start();
+				encoder.initialize(recorder);
+				controls.log('Encoder initialized in ' + timer.time);
 			}
 			
 			protected function load():void 
 			{
-				player.loadBytes(encoder.getVideo());
+				player.loadBytes(encoder.bytes);
 			}
 			
 			protected function preview():void 
@@ -108,25 +131,24 @@ package
 			
 			protected function upload():void
 			{
-				uploader.upload(encoder.getVideo());
+				uploader.upload(encoder.bytes);
 			}
 			
 			protected function setStatus(message:String):void 
 			{
 				controls.setStatus(message);
-				trace(message);
+				//trace(message);
 			}
 			
  			
 		// --------------------------------------------------------------------------------------------------------
-		// handlers
-		
-			// UI
+		// handlers - ui
 		
 			protected function onRecordClick(event:MouseEvent):void
 			{
 				if (encoder.phase !== VideoEncoder.PHASE_CAPTURING)
 				{
+					initializeEncoder();
 					encoder.start();
 				}
 			}
@@ -145,7 +167,7 @@ package
 				if (encoder.phase == VideoEncoder.PHASE_FINISHED)
 				{
 					setStatus('Saving flv...');
-					fileref.save(encoder.getVideo());
+					fileref.save(encoder.bytes);
 				}
 			}
 			
@@ -166,40 +188,35 @@ package
 				}
 			}
 			
-			// Encoder
 			
+		// --------------------------------------------------------------------------------------------------------
+		// handlers - objects
+		
 			private function onEncoderEvent(event:VideoEncoderEvent):void 
 			{
 				// debug
-				trace('event:', event.type);
+				var type:String = event.type.replace('VideoEncoderEvent.', '').toLowerCase();
 				
 				// update controls
-				setStatus('Encoder: ' + encoder.phase);
+				setStatus('Encoder: ' + type);
 				
 				// special cases
 				switch (event.type) 
 				{
 					case VideoEncoderEvent.READY:
-						trace('Video encoder is ready!');
-						recorder.initCamera();
-						controls.btnRecord.enabled = true;
-						break;
-						
-					case VideoEncoderEvent.ENCODING:
-						controls.setProgress(encoder.getEncodingProgress());
+						trace('Video encoder is ready');
 						break;
 						
 					case VideoEncoderEvent.CAPTURED:
-						controls.setProgress(encoder.currentFrame / encoder.totalFrames);
+						onCapture();
+						break;
+						
+					case VideoEncoderEvent.ENCODING:
+						onEncode();
 						break;
 						
 					case VideoEncoderEvent.FINISHED:
-						setStatus('Video encoded in % seconds'.replace('%', encoder.duration.toFixed(2)));
-						controls.btnPlay.enabled = true;
-						controls.btnSave.enabled = true;
-						controls.btnUpload.enabled = true;
-						load();
-						preview();
+						onEncodeComplete();
 						break;
 						
 					default:
@@ -207,7 +224,30 @@ package
 				
 			}
 			
-			// Uploader
+			protected function onCapture():void 
+			{
+				controls.setProgress(encoder.frames / totalFrames);
+				if (encoder.frames == totalFrames)
+				{
+					timer.start();
+					encoder.stop();
+				}
+			}
+			
+			protected function onEncode():void 
+			{
+				controls.setProgress(encoder.encodingProgress);
+			}
+			
+			protected function onEncodeComplete():void 
+			{
+				controls.log('Encoder encoded in ' + timer.stop().time);
+				controls.btnPlay.enabled = true;
+				controls.btnSave.enabled = true;
+				controls.btnUpload.enabled = true;
+				load();
+				preview();
+			}
 			
 			protected function onUploadComplete(event:Event):void 
 			{
