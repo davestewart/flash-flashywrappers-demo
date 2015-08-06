@@ -1,9 +1,9 @@
 package
 {
-	import app.media.video.FLVByteArrayPlayer;
+	import core.media.video.flashywrappers.VideoPlayer;
 	import app.display.VideoControls;
-	import app.media.video.VideoPlayer;
-	import app.media.video.VideoRecorder;
+	import core.media.video.flashywrappers.VideoPlayer;
+	import core.media.video.VideoRecorder;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
@@ -13,8 +13,8 @@ package
 	import flash.net.NetStreamAppendBytesAction;
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
-	import core.media.encoder.VideoEncoderEvent;
-	import core.media.encoder.VideoEncoder;
+	import core.media.video.flashywrappers.VideoEncoderEvent;
+	import core.media.video.flashywrappers.VideoEncoder;
 	import app.net.FileRef;
 	import app.net.Uploader;
 
@@ -30,7 +30,7 @@ package
 		// variables
 		
 			// video
-			protected var player		:FLVByteArrayPlayer;
+			protected var player		:VideoPlayer;
 			protected var recorder		:VideoRecorder;
 			protected var encoder		:VideoEncoder;
 			
@@ -57,7 +57,7 @@ package
 				recorder			= new VideoRecorder(this, 400, 400);
 				
 				// video player
-				player				= new FLVByteArrayPlayer(this, 400, 400);
+				player				= new VideoPlayer(this, 400, 400);
 				player.x			= 400;
 				
 				// controls
@@ -95,9 +95,14 @@ package
 				encoder.load(); // 'lib/FW_SWFBridge_ffmpeg.swf'
 			}
 			
-			protected function preview():void 
+			protected function load():void 
 			{
 				player.loadBytes(encoder.getVideo());
+			}
+			
+			protected function preview():void 
+			{
+				player.play();
 				
 			}
 			
@@ -193,6 +198,7 @@ package
 						controls.btnPlay.enabled = true;
 						controls.btnSave.enabled = true;
 						controls.btnUpload.enabled = true;
+						load();
 						preview();
 						break;
 						

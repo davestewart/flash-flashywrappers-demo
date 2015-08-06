@@ -1,6 +1,7 @@
-package app.media.video 
+package core.media.video 
 {
 	import core.display.Element;
+	import core.media.video.VideoPlayer;
 	import fl.controls.Button;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Shape;
@@ -28,15 +29,19 @@ package app.media.video
 		
 			public function VideoRecorder(parent:DisplayObjectContainer = null, width:int = 400, height:int = 300) 
 			{
-				// super
 				super(parent, width, height);
-				
-				// camera
-				camera		= Camera.getCamera();
-				camera.setMode(_width, _height, 25);
-				
 			}
 			
+			override protected function initialize():void 
+			{
+				camera		= Camera.getCamera();
+				camera.setMode(_width, _height, 25);
+			}
+			
+			
+		// --------------------------------------------------------------------------------------------------------
+		// public functions
+		
 			public function initCamera():void
 			{
 				video.attachCamera(camera);

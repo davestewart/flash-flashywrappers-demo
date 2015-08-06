@@ -1,7 +1,7 @@
 package app.display 
 {
 	import core.display.Element;
-	import app.media.video.VideoRecorder;
+	import core.media.video.VideoRecorder;
 	import fl.controls.Button;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Shape;

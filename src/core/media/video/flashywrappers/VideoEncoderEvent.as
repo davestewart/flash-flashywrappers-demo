@@ -1,4 +1,4 @@
-package core.media.encoder 
+package core.media.video.flashywrappers 
 {
 	import flash.events.Event;
 	

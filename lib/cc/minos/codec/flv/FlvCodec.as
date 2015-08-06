@@ -20,6 +20,8 @@ package cc.minos.codec.flv {
 		private var _timesPos:uint;
 
 		private var keyframesList:Array;
+		
+		
 
 		public function FlvCodec()
 		{

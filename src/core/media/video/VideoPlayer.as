@@ -1,4 +1,4 @@
-package app.media.video 
+package core.media.video 
 {
 	import core.display.Element;
 	import fl.controls.Button;
@@ -30,8 +30,9 @@ package app.media.video
 			protected var _width		:int;
 			protected var _height		:int;
 			
-			// connection
+			// stream
 			protected var connection	:NetConnection;
+			protected var stream		:NetStream;
 			
 			
 			
@@ -48,11 +49,16 @@ package app.media.video
 				_height		= height;
 				
 				// build
+				initialize();
 				build();
+			}
+			
+			protected function initialize():void 
+			{
 				
 			}
 			
-			public function build():void
+			protected function build():void
 			{
 				// bg
 				bg						= new Shape();
@@ -71,12 +77,21 @@ package app.media.video
 
 			}
 			
+			
+		// --------------------------------------------------------------------------------------------------------
+		// public methods
+		
 			public function loadUrl(url:String):void
 			{
-				var stream:NetStream = new NetStream(connection);
-				stream.client = { };	
+				stream			= new NetStream(connection);
+				stream.client	= { };	
 				video.attachNetStream(stream);
 				stream.play(url);
+			}
+			
+			public function play():void
+			{
+				
 			}
 			
 			

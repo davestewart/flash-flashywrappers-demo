@@ -1,4 +1,4 @@
-package core.media.encoder
+package core.media.video.flashywrappers
 {
 	
 	import com.rainbowcreatures.*;
@@ -91,10 +91,8 @@ package core.media.encoder
 				dispatchEvent(new VideoEncoderEvent(VideoEncoderEvent.INITIALIZING));
 				encoder.start(fps, 'audioOff', true, target.width, target.height, bitrate);
 				
-				// HACK until proper event is dispatched from the encoder
-				setTimeout(function():void {
-					encoder.dispatchEvent(new StatusEvent(StatusEvent.STATUS, false, false, 'initialized'));
-					}, 500);
+				_phase = PHASE_READY;
+				dispatchEvent(new VideoEncoderEvent(VideoEncoderEvent.READY));
 			}
 		
 			public function start():void 
