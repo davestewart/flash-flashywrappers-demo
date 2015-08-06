@@ -18,8 +18,8 @@ package core.media.video.flashywrappers
 				
 			
 			// properties
-			protected var encoder		:VideoEncoder;
-				
+
+			
 			// variables
 				
 				
