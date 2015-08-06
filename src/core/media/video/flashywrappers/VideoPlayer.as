@@ -32,9 +32,9 @@ package core.media.video.flashywrappers
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function VideoPlayer(parent:DisplayObjectContainer = null, width:int = 400, height:int = 300) 
+			public function VideoPlayer(width:int = 400, height:int = 300) 
 			{
-				super(parent, width, height);
+				super(width, height);
 			}
 			
 		
@@ -44,8 +44,8 @@ package core.media.video.flashywrappers
 			public function loadBytes(bytes:ByteArray):void 
 			{
 				// variables
-				var mp4:Mp4Codec	= new Mp4Codec();;
-				var flv:FlvCodec	= new FlvCodec();
+				var mp4:Mp4Codec	= new Mp4Codec();
+				var flv:FlvCodec	= new FlvCodec
 				
 				// convert mp4 bytes to flv
 				mp4.decode(bytes);

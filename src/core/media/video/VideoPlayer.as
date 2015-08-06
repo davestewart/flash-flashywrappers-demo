@@ -39,11 +39,8 @@ package core.media.video
 		// --------------------------------------------------------------------------------------------------------
 		// instantiation
 		
-			public function VideoPlayer(parent:DisplayObjectContainer = null, width:int = 400, height:int = 300) 
+			public function VideoPlayer(width:int = 400, height:int = 300) 
 			{
-				// super
-				super(parent);
-				
 				// dimensions
 				_width		= width;
 				_height		= height;

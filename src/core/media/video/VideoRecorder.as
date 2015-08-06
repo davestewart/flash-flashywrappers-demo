@@ -27,9 +27,9 @@ package core.media.video
 		// --------------------------------------------------------------------------------------------------------
 		// instantiation
 		
-			public function VideoRecorder(parent:DisplayObjectContainer = null, width:int = 400, height:int = 300) 
+			public function VideoRecorder(width:int = 400, height:int = 300) 
 			{
-				super(parent, width, height);
+				super(width, height);
 			}
 			
 			override protected function initialize():void 

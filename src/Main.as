@@ -50,25 +50,31 @@ package
 		
 			public function Main() 
 			{
+				// setup
 				initialize();
 				build();
+				
+				// load encoder
+				controls.setStatus('Encoder: loading')
+				VideoEncoder.load(this, start);
 			}
 			
 			protected function initialize():void 
 			{
 				totalFrames = 25 * 5;
 				timer		= new Timer(true);
-				VideoEncoder.load(this, start);
 			}
 			
 			protected function build():void 
 			{
 				// video recorder
-				recorder			= new VideoRecorder(this, 400, 400);
+				recorder			= new VideoRecorder(400, 400);
+				addChild(recorder);
 				
 				// video player
-				player				= new VideoPlayer(this, 400, 400);
+				player				= new VideoPlayer(400, 400);
 				player.x			= 400;
+				addChild(player);
 				
 				// controls
 				controls			= new VideoControls(this, recorder);
@@ -97,7 +103,7 @@ package
 				
 				// encoder
 				encoder			= VideoEncoder.instance;
-				encoder.fps		= 12;
+				encoder.fps		= 25;
 				encoder.addEventListener(VideoEncoderEvent.READY, onEncoderEvent);
 				encoder.addEventListener(VideoEncoderEvent.CAPTURED, onEncoderEvent);
 				encoder.addEventListener(VideoEncoderEvent.ENCODING, onEncoderEvent);
@@ -149,6 +155,7 @@ package
 				if (encoder.phase !== VideoEncoder.PHASE_CAPTURING)
 				{
 					initializeEncoder();
+					controls.log('Capturing at ' +encoder.fps+ ' fps');
 					encoder.start();
 				}
 			}
