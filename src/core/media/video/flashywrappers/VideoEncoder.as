@@ -8,7 +8,6 @@ package core.media.video.flashywrappers
 	import flash.events.EventDispatcher;
 	import flash.events.StatusEvent;
 	import flash.utils.ByteArray;
-	import flash.utils.getTimer;
 	import flash.utils.setTimeout;
 	
 	/**
@@ -33,31 +32,23 @@ package core.media.video.flashywrappers
 		// variables
 		
 			// statics
-			protected static var _path		:String;
-			public static function get path():String { return _path; }
-			
-			protected static var _loaded	:Boolean;
-			public static function get loaded():Boolean { return _loaded; }
-		
 			protected static var _instance	:VideoEncoder;
 		
-			// objects
-			protected var target			:Sprite;
+			// protected properties
 			protected var encoder			:FWVideoEncoder;
-			protected var data				:ByteArray;
 			
-			// properties 
+			// accessor properties
+			protected var _target			:Sprite;
 			protected var _fps				:int;
 			protected var _bitrate			:int;
 			protected var _realtime			:Boolean;
 			protected var _format			:String;
 			
-			// variables
-			protected var _frames			:int;
+			// accessor variables
 			protected var _phase			:String				= PHASE_UNLOADED;
-			protected var _timeStart		:Number;
+			protected var _frames			:int;
 			protected var _bytes			:ByteArray;
-
+			
 			
 		// --------------------------------------------------------------------------------------------------------
 		// static instantiation
@@ -69,53 +60,46 @@ package core.media.video.flashywrappers
 				{
 					if (event.code === 'ready')
 					{
-						VideoEncoder._loaded = true;
+						// remove the temp loading listener
 						encoder.removeEventListener(StatusEvent.STATUS, onStatus);
-						if (onLoad is Function)
-						{
-							onLoad(new VideoEncoderEvent(VideoEncoderEvent.LOADED));
-						}
+						
+						// start the encoder for the first time, this gets the 500ms delay done and dusted
+						encoder.start();
+						
+						// create a new VideoEncoder instance
+						_instance = new klass(encoder, new Lock);
+						
+						// fire the callback and return the new VideoEncoder
+						onLoad();
 					}
 				}
+
+				// set a class reference to this class, as for some reason it can't be seen inside the closure
+				var klass:Class = VideoEncoder;
 				
-				// set the path for later
-				_path = path;
-				
-				// create and load a stub encoder, just to get ffmpeg loaded
+				// load the actual encoder library
 				var encoder:FWVideoEncoder = FWVideoEncoder.getInstance(root);
 				encoder.addEventListener(StatusEvent.STATUS, onStatus);
 				encoder.load(path);
 			}
 			
-			public static function get instance():VideoEncoder { return _instance; }
-
-		
+			static public function get instance():VideoEncoder { return _instance; }
+			
+			
 		// --------------------------------------------------------------------------------------------------------
-		// private constructor
+		// singleton constructor
 		
-			public function VideoEncoder(target:Sprite, fps:int = 25, format:String = 'mp4') 
+			public function VideoEncoder($encoder:FWVideoEncoder, lock:Lock) 
 			{
-				// test for loaded
-				if ( ! VideoEncoder._loaded )
-				{
-					throw new UninitializedError('The VideoEncoder ffmpeg library has not yet loaded. Load the library using VideoEncoder.load(onLoaded) before instantiating VideoEncoder instances');
-				}
-				
-				// properties
-				this.target				= target;
-				
-				// encoder properties
-				_format					= format;
-				_fps					= fps;
-				_bitrate				= 1000000;
-				_realtime				= false;
-				
 				// set up encoder
-				encoder					= FWVideoEncoder.getInstance(target);
+				encoder					= $encoder;
 				encoder.addEventListener(StatusEvent.STATUS, onStatus);
 				
-				// re-load cached ffmpeg library
-				encoder.load(VideoEncoder.path);
+				// default properties
+				_fps					= 25;
+				_format					= 'mp4';
+				_bitrate				= 1000000;
+				_realtime				= false;
 			}
 			
 			
@@ -123,14 +107,24 @@ package core.media.video.flashywrappers
 		// public functions
 		
 			/**
-			 * Call in advance of recording
+			 * Call in advance of recording - it reinitializes the encoder
 			 */
-			public function initialize():void 
+			public function initialize(target:Sprite = null):void 
 			{
-				// set up encoder
-				trace('start ' + getTimer());
-				encoder.start(fps, 'audioOff', true, target.width, target.height, bitrate);
-				trace('end ' + getTimer());				trace(getTimer());
+				// set target
+				if (target !== null)
+				{
+					_target = target;
+				}
+				
+				// throw an error if we've got no target
+				if (_target == null)
+				{
+					throw new ReferenceError('A target Sprite must be specified before initializing');
+				}
+			
+				// re-initialize encoder
+				encoder.start(fps, 'audioOff', true, _target.width, _target.height, bitrate);
 				
 				// phase
 				_phase = PHASE_READY;
@@ -144,13 +138,18 @@ package core.media.video.flashywrappers
 			 */
 			public function start():void 
 			{
+				// reiniialize if needs be
 				if (phase !== PHASE_READY)
 				{
-					trace('WARNING! Did not pre-initialize VideoEncoder. Reinitializing (there will be a delay) ...');
+					trace('WARNING! Did not pre-initialize VideoEncoder. Re-initializing (there may be a delay) ...');
 					initialize();
 				}
 				
+				// reset
 				_frames = 0;
+				
+				// start encoding
+				onCapture(null);
 				target.addEventListener(Event.ENTER_FRAME, onCapture);
 			}
 			
@@ -159,7 +158,7 @@ package core.media.video.flashywrappers
 			 */
 			public function stop():void
 			{
-				_timeStart	= getTimer();
+				// immediately start encoding
 				_phase		= PHASE_ENCODING;
 				target.removeEventListener(Event.ENTER_FRAME, onCapture);
 				target.addEventListener(Event.ENTER_FRAME, onEncode);
@@ -169,6 +168,12 @@ package core.media.video.flashywrappers
 			
 		// --------------------------------------------------------------------------------------------------------
 		// accessors
+			
+			public function get target():Sprite { return _target; }
+			public function set target(value:Sprite):void 
+			{
+				_target = value;
+			}
 			
 			public function get fps():int { return _fps; }
 			public function set fps(value:int):void 
@@ -198,11 +203,9 @@ package core.media.video.flashywrappers
 			
 			public function get phase():String { return _phase; }
 			
-			public function get encodingProgress():Number { return encoder.getEncodingProgress(); }
-			
-			public function get duration():Number { return (getTimer() - _timeStart) / 1000; }
-			
 			public function get bytes():ByteArray { return _bytes; }
+			
+			public function get encodingProgress():Number { return encoder.getEncodingProgress(); }
 			
 			
 		// --------------------------------------------------------------------------------------------------------
@@ -265,3 +268,4 @@ class Lock
 {
 	
 }
+

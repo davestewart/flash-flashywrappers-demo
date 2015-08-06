@@ -4,6 +4,7 @@ package
 	import app.display.VideoControls;
 	import core.media.video.flashywrappers.VideoPlayer;
 	import core.media.video.VideoRecorder;
+	import core.utils.Timer;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
@@ -41,6 +42,7 @@ package
 			
 			// variables
 			protected var totalFrames	:int;
+			protected var timer			:Timer;
 			
 			
 		// --------------------------------------------------------------------------------------------------------
@@ -54,8 +56,9 @@ package
 			
 			protected function initialize():void 
 			{
-				totalFrames = 25 * 15;
-				VideoEncoder.load(this, onEncoderEvent);
+				totalFrames = 25 * 5;
+				timer		= new Timer(true);
+				VideoEncoder.load(this, start);
 			}
 			
 			protected function build():void 
@@ -89,8 +92,12 @@ package
 		
 			protected function start():void 
 			{
+				// trace load time
+				controls.log('Encoder loaded in ' + timer.stop().time)
+				
 				// encoder
-				encoder = new VideoEncoder(recorder, 12.5, 'mp4');
+				encoder			= VideoEncoder.instance;
+				encoder.fps		= 12;
 				encoder.addEventListener(VideoEncoderEvent.READY, onEncoderEvent);
 				encoder.addEventListener(VideoEncoderEvent.CAPTURED, onEncoderEvent);
 				encoder.addEventListener(VideoEncoderEvent.ENCODING, onEncoderEvent);
@@ -99,6 +106,16 @@ package
 				// controls
 				controls.btnRecord.enabled = true;
 				recorder.initCamera();
+				
+				// initialize
+				initializeEncoder();
+			}
+			
+			protected function initializeEncoder():void 
+			{
+				timer.start();
+				encoder.initialize(recorder);
+				controls.log('Encoder initialized in ' + timer.time);
 			}
 			
 			protected function load():void 
@@ -129,9 +146,9 @@ package
 		
 			protected function onRecordClick(event:MouseEvent):void
 			{
-				trace(encoder.phase);
 				if (encoder.phase !== VideoEncoder.PHASE_CAPTURING)
 				{
+					initializeEncoder();
 					encoder.start();
 				}
 			}
@@ -186,11 +203,6 @@ package
 				// special cases
 				switch (event.type) 
 				{
-					case VideoEncoderEvent.LOADED:
-						trace('Video encoder has loaded');
-						start();
-						break;
-						
 					case VideoEncoderEvent.READY:
 						trace('Video encoder is ready');
 						break;
@@ -217,6 +229,7 @@ package
 				controls.setProgress(encoder.frames / totalFrames);
 				if (encoder.frames == totalFrames)
 				{
+					timer.start();
 					encoder.stop();
 				}
 			}
@@ -228,7 +241,7 @@ package
 			
 			protected function onEncodeComplete():void 
 			{
-				setStatus('Video encoded in % seconds'.replace('%', encoder.duration.toFixed(2)));
+				controls.log('Encoder encoded in ' + timer.stop().time);
 				controls.btnPlay.enabled = true;
 				controls.btnSave.enabled = true;
 				controls.btnUpload.enabled = true;
