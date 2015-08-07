@@ -50,10 +50,10 @@ package app.display
 			{
 				// UI
 				btnRecord					= makeButton('Record');
-				btnPlay						= makeButton('Play');
-				btnSave						= makeButton('Save');
-				btnUpload					= makeButton('Upload');
-				btnLoad						= makeButton('Load');
+				btnPlay						= makeButton('Play Bytes');
+				btnSave						= makeButton('Save File');
+				btnUpload					= makeButton('Upload Bytes');
+				btnLoad						= makeButton('Play URL');
 					
 				// status
 				tfStatus					= makeTextfield(30);

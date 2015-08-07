@@ -16,7 +16,7 @@
     </define>
     <define append="true">
       <name>CONFIG::timeStamp</name>
-      <value>'8/6/2015'</value>
+      <value>'8/7/2015'</value>
     </define>
     <define append="true">
       <name>CONFIG::air</name>
@@ -32,17 +32,17 @@
     </define>
     <verbose-stacktraces>true</verbose-stacktraces>
     <source-path append="true">
-      <path-element>D:\Work\02 - Current\2015-07 - MixOff\4 - development\flashy wrappers\both\src</path-element>
-      <path-element>D:\Work\02 - Current\2015-07 - MixOff\4 - development\flashy wrappers\both\lib</path-element>
+      <path-element>D:\Work\02 - Current\2015-07 - MixOff\4 - development\flashy wrappers\demo\src</path-element>
+      <path-element>D:\Work\02 - Current\2015-07 - MixOff\4 - development\flashy wrappers\demo\lib</path-element>
       <path-element>C:\Program Files (x86)\Development\FlashDevelop\Library\AS3\classes</path-element>
     </source-path>
     <library-path append="true">
-      <path-element>D:\Work\02 - Current\2015-07 - MixOff\4 - development\flashy wrappers\both\lib\UI.swc</path-element>
-      <path-element>D:\Work\02 - Current\2015-07 - MixOff\4 - development\flashy wrappers\both\lib\mp4\fw_ffmpeg_encode_mp4_release_swf.swc</path-element>
+      <path-element>D:\Work\02 - Current\2015-07 - MixOff\4 - development\flashy wrappers\demo\lib\UI.swc</path-element>
+      <path-element>D:\Work\02 - Current\2015-07 - MixOff\4 - development\flashy wrappers\demo\lib\mp4\fw_ffmpeg_encode_mp4_release_swf.swc</path-element>
     </library-path>
   </compiler>
   <file-specs>
-    <path-element>D:\Work\02 - Current\2015-07 - MixOff\4 - development\flashy wrappers\both\src\Main.as</path-element>
+    <path-element>D:\Work\02 - Current\2015-07 - MixOff\4 - development\flashy wrappers\demo\src\Main.as</path-element>
   </file-specs>
   <default-background-color>#FFFFFF</default-background-color>
   <default-frame-rate>25</default-frame-rate>

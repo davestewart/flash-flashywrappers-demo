@@ -18,16 +18,16 @@ package app.net
 		// --------------------------------------------------------------------------------------------------------
 		// variables
 		
-			private var server			:String;
+			private var url			:String;
 			protected var _response		:Object;
 
 
 		// --------------------------------------------------------------------------------------------------------
 		// instantiation
 		
-			public function Uploader(server:String = 'http://localhost:8000/') 
+			public function Uploader(url:String = 'http://davestewart.co.uk/temp/fw/encode.php') 
 			{
-				this.server = server;
+				this.url = url;
 			}
 			
 			
@@ -37,7 +37,7 @@ package app.net
 			public function upload(bytes:ByteArray):void 
 			{
 				// request objects
-				var request			:URLRequest		= new URLRequest(server + 'encode.php');
+				var request			:URLRequest		= new URLRequest(url);
 				var loader			:URLLoader		= new URLLoader();
 				
 				// set up request
@@ -55,6 +55,8 @@ package app.net
 		// accessors
 		
 			public function get response():Object { return _response; }
+			
+			public function get uploadUrl():Object { return _response.data.url; }
 			
 			
 		// --------------------------------------------------------------------------------------------------------

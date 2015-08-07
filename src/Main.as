@@ -85,7 +85,7 @@ package
 				controls.btnLoad.addEventListener(MouseEvent.CLICK, onLoadClick);
 				
 				// uploader
-				uploader			= new Uploader();
+				uploader			= new Uploader('http://52.18.237.177/videos/55c1f75872d92a68278b4568/1');
 				uploader.addEventListener(Event.COMPLETE, onUploadComplete);
 				
 				// file
@@ -131,6 +131,7 @@ package
 			
 			protected function preview():void 
 			{
+				setStatus('Playing bytearray...');
 				player.play();
 				
 			}
@@ -164,7 +165,6 @@ package
 			{
 				if (encoder.phase == VideoEncoder.PHASE_FINISHED)
 				{
-					setStatus('Playing bytearray...');
 					preview();
 				}
 			}
@@ -182,6 +182,7 @@ package
 			{
 				if (encoder.phase == VideoEncoder.PHASE_FINISHED)
 				{
+					timer.start();
 					upload();
 				}
 			}
@@ -190,8 +191,9 @@ package
 			{
 				if (encoder.phase == VideoEncoder.PHASE_FINISHED)
 				{
-					setStatus('Playing mp4 stream...');
-					player.loadUrl(uploader.response.url);
+					var url:String = uploader.response.data.url;
+					setStatus('Playing: ' + url);
+					player.loadUrl(url);
 				}
 			}
 			
@@ -258,8 +260,8 @@ package
 			
 			protected function onUploadComplete(event:Event):void 
 			{
-				navigateToURL(new URLRequest(uploader.response.url), 'video');
-				setStatus('Video uploaded to: ' + uploader.response.url);
+				setStatus('Video uploaded to: ' + uploader.response.data.url);
+				controls.log('Video uploaded in: ' + timer.time);
 				controls.btnLoad.enabled = true;
 			}
 			
